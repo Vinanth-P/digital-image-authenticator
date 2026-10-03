@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ImageGuard — Verify digital image authenticity and ownership using AI-powered forgery detection and RSA digital signatures.">
+    <title>ImageGuard — Digital Image Authenticity Verification</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+<!-- SVG Gradients for Score Rings -->
+<svg width="0" height="0" style="position:absolute">
+    <defs>
+        <linearGradient id="gradient-success" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22c55e"/>
+            <stop offset="100%" stop-color="#06b6d4"/>
+        </linearGradient>
+        <linearGradient id="gradient-danger" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ef4444"/>
+            <stop offset="100%" stop-color="#f97316"/>
+        </linearGradient>
+    </defs>
+</svg>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Analyzing image...</div>
+    <div class="loading-subtext" id="loadingSubtext">Running ELA, noise analysis, and AI classification</div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ═══ APP ═══ -->
+<div class="app-container">
+
+    <!-- ─── Navbar ──────────────────────────────── -->
+    <nav class="navbar">
+        <a class="nav-brand" href="#" onclick="showPage('home')">
+            <div class="logo-icon">🛡️</div>
+            <span class="brand-text">ImageGuard</span>
+        </a>
+        <div class="nav-links">
+            <button class="nav-link active" data-page="home" onclick="showPage('home')">Home</button>
+            <button class="nav-link" data-page="analyze" onclick="showPage('analyze')">Analyze</button>
+            <button class="nav-link" data-page="sign" onclick="showPage('sign')">Sign & Verify</button>
+            <button class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button>
+            <button class="nav-link" data-page="keys" onclick="showPage('keys')">Key Manager</button>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  HOME PAGE                                  -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-home" class="page active">
+        <section class="hero">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                AI-Powered Image Verification
+            </div>
+            <h1>Verify Image <span class="gradient-text">Authenticity</span><br>& Prove Ownership</h1>
+            <p>Advanced forgery detection using Error Level Analysis, noise pattern recognition, and AI classification — combined with RSA digital signatures for bulletproof ownership verification.</p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-lg" onclick="showPage('analyze')">🔍 Analyze Image</button>
+                <button class="btn btn-ghost btn-lg" onclick="showPage('sign')">✍️ Sign an Image</button>
+            </div>
+        </section>
+
+        <!-- Feature cards -->
+        <div class="results-grid" style="margin-top:32px;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon blue">🔬</div>
+                    <div><h2>Forgery Detection</h2><p>ELA + Noise + AI</p></div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
+                    Error Level Analysis detects compression inconsistencies. Noise analysis reveals splicing artifacts. Our AI classifier examines frequency-domain features to uncover copy-move and manipulation.
+                </p>
+            </div>
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon violet">🔐</div>
+                    <div><h2>Digital Signatures</h2><p>RSA-2048 + SHA-256</p></div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
+                    Generate RSA key pairs and digitally sign your images. Any modification invalidates the signature, providing cryptographic proof of ownership and integrity.
+                </p>
+            </div>
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon green">📜</div>
+                    <div><h2>Certificates</h2><p>PDF + QR Verification</p></div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
+                    Generate professional PDF certificates of authenticity with embedded QR codes. Share verifiable proof that your image has been analyzed and signed.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  ANALYZE PAGE                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-analyze" class="page">
+        <div class="glass-card">
+            <div class="card-header">
+                <div class="icon blue">🔬</div>
+                <div>
+                    <h2>Image Forgery Analysis</h2>
+                    <p>Upload an image to detect manipulation using AI</p>
+                </div>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="uploadZone">
+                <span class="upload-icon">📁</span>
+                <h3>Drop your image here</h3>
+                <p>or click to browse — PNG, JPG, BMP, TIFF, WEBP (max 16 MB)</p>
+                <span class="browse-btn">Browse Files</span>
+                <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.bmp,.tiff,.webp" style="display:none">
+            </div>
+
+            <!-- Preview -->
+            <div class="upload-preview" id="uploadPreview">
+                <img id="previewImage" alt="Preview">
+                <div class="file-info" id="fileInfo"></div>
+                <button class="btn btn-primary btn-lg btn-block mt-md" id="analyzeBtn" onclick="analyzeImage()">
+                    🔍 Analyze Image
+                </button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-container" id="resultsContainer">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  SIGN & VERIFY PAGE                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-sign" class="page">
+        <div class="results-grid">
+            <!-- Sign Panel -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon violet">✍️</div>
+                    <div>
+                        <h2>Sign an Image</h2>
+                        <p>Claim ownership with your RSA key</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Image</label>
+                    <select class="form-select" id="signImageSelect">
+                        <option value="">-- Select an analyzed image --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Your Key</label>
+                    <select class="form-select" id="signKeySelect">
+                        <option value="">-- Select your RSA key --</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-block mt-md" onclick="signImage()">✍️ Sign Image</button>
+            </div>
+
+            <!-- Verify Panel -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon green">✅</div>
+                    <div>
+                        <h2>Verify Signature</h2>
+                        <p>Check image integrity & ownership</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Signed Image</label>
+                    <select class="form-select" id="verifyImageSelect">
+                        <option value="">-- Select a signed image --</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success btn-block mt-md" onclick="verifySignature()">✅ Verify Signature</button>
+
+                <div id="verificationResult" class="mt-lg" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  DASHBOARD PAGE                             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-dashboard" class="page">
+        <div class="flex-between mb-lg">
+            <h1 style="font-size:1.5rem; font-weight:700; color:var(--surface-50);">📊 Dashboard</h1>
+            <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Gallery -->
+        <h2 style="font-size:1.125rem; font-weight:600; color:var(--surface-100); margin-bottom:var(--space-md);">
+            Verified Images
+        </h2>
+        <div class="gallery-grid" id="galleryGrid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  KEY MANAGER PAGE                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-keys" class="page">
+        <div class="results-grid">
+            <!-- Generate Keys -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon violet">🔑</div>
+                    <div>
+                        <h2>Generate RSA Key Pair</h2>
+                        <p>Create a new identity for signing</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Owner Name *</label>
+                    <input type="text" class="form-input" id="keyOwnerName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-input" id="keyOwnerEmail" placeholder="your@email.com">
+                </div>
+
+                <button class="btn btn-primary btn-block mt-md" onclick="generateKeys()">🔑 Generate Key Pair</button>
+            </div>
+
+            <!-- Key List -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="icon blue">📋</div>
+                    <div>
+                        <h2>Your Keys</h2>
+                        <p>Manage your RSA key pairs</p>
+                    </div>
+                </div>
+
+                <div id="keysList">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔑</div>
+                        <h3>No keys yet</h3>
+                        <p>Generate your first RSA key pair to start signing images.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  DETAIL VIEW PAGE                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page-detail" class="page">
+        <div id="detailContent">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

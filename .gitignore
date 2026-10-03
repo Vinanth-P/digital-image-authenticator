@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask/FastAPI instance and database
+instance/
+*.sqlite3
+*.db
+
+# Uploads and generated files
+static/uploads/*
+static/results/*
+static/certificates/*
+static/keys/*
+!static/uploads/.gitkeep
+!static/results/.gitkeep
+!static/certificates/.gitkeep
+!static/keys/.gitkeep
