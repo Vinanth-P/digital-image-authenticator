@@ -1,0 +1,26 @@
+{
+  "cifake": {
+    "repo": "cftcimert/cifake-efficientnet-b0",
+    "revision": "2235b7af38d04956416238554080494d84091552",
+    "files": {
+      "model.onnx": {
+        "local": "cifake_efficientnet_b0.onnx",
+        "sha256": "99dd699a130b3eb21dfc0278a3eca6f03761309481f6f75391041e3f9609d97e"
+      },
+      "model.onnx.data": {
+        "local": "model.onnx.data",
+        "sha256": "3bb70d2e1841e6308399e5bf7d32b480086c860493ea249749ba5d82b21021a5"
+      }
+    }
+  },
+  "detectra": {
+    "repo": "s-gehring/detectra-openfake",
+    "revision": "c84565e5bf8969d95908e12844f551e77ae87105",
+    "files": {
+      "model.onnx": {
+        "local": "detectra_openfake.onnx",
+        "sha256": "b5bd0fd699469b721b00f6a5626a2616b2b0a34283eece124d90451147ab7fc6"
+      }
+    }
+  }
+}

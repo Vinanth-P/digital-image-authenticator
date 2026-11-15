@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ImageGuard — Verify digital image authenticity and ownership using AI-powered forgery detection and RSA digital signatures.">
-    <title>ImageGuard — Digital Image Authenticity Verification</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <meta name="description" content="ImageGuard v2 — Experimental image forensics, cryptographic signatures, provenance inspection, and a local audit log.">
+    <title>ImageGuard v2 — Digital Image Authenticity &amp; Neural Forensics</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=2.0.4">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FAFAFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
 </head>
 <body>
 
@@ -14,12 +14,16 @@
 <svg width="0" height="0" style="position:absolute">
     <defs>
         <linearGradient id="gradient-success" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#22c55e"/>
-            <stop offset="100%" stop-color="#06b6d4"/>
+            <stop offset="0%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#059669"/>
         </linearGradient>
         <linearGradient id="gradient-danger" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#ef4444"/>
-            <stop offset="100%" stop-color="#f97316"/>
+            <stop offset="0%" stop-color="#f43f5e"/>
+            <stop offset="100%" stop-color="#be123c"/>
+        </linearGradient>
+        <linearGradient id="gradient-warning" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
         </linearGradient>
     </defs>
 </svg>
@@ -28,169 +32,397 @@
 <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner"></div>
     <div class="loading-text" id="loadingText">Analyzing image...</div>
-    <div class="loading-subtext" id="loadingSubtext">Running ELA, noise analysis, and AI classification</div>
+    <div class="loading-subtext" id="loadingSubtext">Running ELA, SRM noise, 2D FFT spectrum, and ONNX classification</div>
 </div>
 
 <!-- Toast Container -->
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- ═══ APP ═══ -->
+<!-- ═══ TOP COMMAND HEADER (FULL WIDTH 56PX) ═══ -->
+<header class="top-command-bar">
+    <div class="header-inner">
+        <div class="nav-left">
+            <a class="nav-brand" href="#" onclick="showPage('home')">
+                <div class="logo-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="brand-text">ImageGuard <span class="badge-v2">v2.0</span></span>
+            </a>
+            <nav class="nav-links">
+                <button class="nav-link active" data-page="home" onclick="showPage('home')">
+                    <span class="nav-idx">01</span> / HOME
+                </button>
+                <button class="nav-link" data-page="analyze" onclick="showPage('analyze')">
+                    <span class="nav-idx">02</span> / ANALYZE
+                </button>
+                <button class="nav-link" data-page="sign" onclick="showPage('sign')">
+                    <span class="nav-idx">03</span> / SIGN &amp; VERIFY
+                </button>
+                <button class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">
+                    <span class="nav-idx">04</span> / LEDGER
+                </button>
+                <button class="nav-link" data-page="keys" onclick="showPage('keys')">
+                    <span class="nav-idx">05</span> / KEY VAULT
+                </button>
+            </nav>
+        </div>
+        <div class="system-status-badge">
+            <span class="status-dot"></span>
+            <span>Experimental analysis &middot; signatures verified separately</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══ APP CONTAINER ═══ -->
 <div class="app-container">
 
-    <!-- ─── Navbar ──────────────────────────────── -->
-    <nav class="navbar">
-        <a class="nav-brand" href="#" onclick="showPage('home')">
-            <div class="logo-icon">🛡️</div>
-            <span class="brand-text">ImageGuard</span>
-        </a>
-        <div class="nav-links">
-            <button class="nav-link active" data-page="home" onclick="showPage('home')">Home</button>
-            <button class="nav-link" data-page="analyze" onclick="showPage('analyze')">Analyze</button>
-            <button class="nav-link" data-page="sign" onclick="showPage('sign')">Sign & Verify</button>
-            <button class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button>
-            <button class="nav-link" data-page="keys" onclick="showPage('keys')">Key Manager</button>
-        </div>
-    </nav>
-
     <!-- ═══════════════════════════════════════════ -->
-    <!--  HOME PAGE                                  -->
+    <!--  HOME PAGE (ASYMMETRIC COMMAND DECK)        -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-home" class="page active">
-        <section class="hero">
-            <div class="hero-badge">
-                <span class="pulse-dot"></span>
-                AI-Powered Image Verification
+        <!-- Asymmetric 2-Column Split Hero -->
+        <section class="command-deck-hero">
+            <!-- Left Column: 60% width, strictly left-aligned -->
+            <div class="hero-left-col">
+                <div class="hero-eyebrow">
+                    <span class="status-dot"></span>
+                    <span>SYS.VER // 2.0.0 — FORENSICS, SIGNATURES &amp; PROVENANCE INSPECTION</span>
+                </div>
+                <h1 class="hero-display-title">Inspect image evidence. Sign exact bytes.</h1>
+                <p class="hero-lead-text">
+                    Explore compression, noise, spectral, and neural signals in one forensic workbench. Preserve originals, verify cryptographic signatures, and inspect a signed local audit history. Detection scores are experimental; a valid signature establishes a relationship between bytes and a key, not camera origin or the truth of a scene.
+                </p>
+                <div class="hero-actions-row">
+                    <button class="btn btn-primary" onclick="showPage('analyze')">
+                        Launch Forensic Workbench
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPage('sign')">
+                        Cryptographic Sign &amp; Recovery
+                    </button>
+                </div>
+                <!-- Implemented capabilities, not fixed performance claims -->
+                <div class="hero-telemetry-strip">
+                    <div class="telemetry-cell">
+                        <div class="telemetry-cell-val tabular-nums">4 branches</div>
+                        <div class="telemetry-cell-lbl">EXPERIMENTAL IMAGE SIGNALS</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="telemetry-cell-val tabular-nums">RSA-PSS</div>
+                        <div class="telemetry-cell-lbl">EXACT-BYTE SIGNATURES</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="telemetry-cell-val tabular-nums">Originals</div>
+                        <div class="telemetry-cell-lbl">RETAINED BEFORE SIGNING</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="telemetry-cell-val tabular-nums">Ed25519</div>
+                        <div class="telemetry-cell-lbl">SIGNED LOCAL CHECKPOINTS</div>
+                    </div>
+                </div>
             </div>
-            <h1>Verify Image <span class="gradient-text">Authenticity</span><br>& Prove Ownership</h1>
-            <p>Advanced forgery detection using Error Level Analysis, noise pattern recognition, and AI classification — combined with RSA digital signatures for bulletproof ownership verification.</p>
-            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-lg" onclick="showPage('analyze')">🔍 Analyze Image</button>
-                <button class="btn btn-ghost btn-lg" onclick="showPage('sign')">✍️ Sign an Image</button>
+
+            <!-- Right Column: 40% width, Interactive Architecture Blueprint -->
+            <div class="hero-right-col">
+                <div class="blueprint-terminal-card">
+                    <div class="terminal-card-header">
+                        <div class="terminal-dots">
+                            <span class="term-dot"></span>
+                            <span class="term-dot"></span>
+                            <span class="term-dot"></span>
+                        </div>
+                        <span class="term-filename">PIPELINE_SPEC // TWO_GATE_VETO.arch</span>
+                        <span class="term-badge">EXPERIMENTAL</span>
+                    </div>
+                    <div class="terminal-body text-mono">
+                        <div class="term-row">
+                            <span class="term-line-no">01</span>
+                            <span class="term-accent">GATE 01 [TAMPER INTEGRITY]</span>
+                        </div>
+                        <div class="term-row indent">
+                            <span class="term-line-no">02</span>
+                            <span class="term-muted">Formula:</span> <span class="term-val">0.55·ELA + 0.45·SRM</span>
+                        </div>
+                        <div class="term-row indent">
+                            <span class="term-line-no">03</span>
+                            <span class="term-muted">Threshold:</span> <span class="term-success">Pass &gt;= 60.0%</span>
+                        </div>
+                        <div class="term-row divider"></div>
+                        <div class="term-row">
+                            <span class="term-line-no">04</span>
+                            <span class="term-accent">GATE 02 [SYNTHETIC SIGNAL]</span>
+                        </div>
+                        <div class="term-row indent">
+                            <span class="term-line-no">05</span>
+                            <span class="term-muted">Formula:</span> <span class="term-val">0.70·(100-synthetic score) + 0.30·FFT</span>
+                        </div>
+                        <div class="term-row indent">
+                            <span class="term-line-no">06</span>
+                            <span class="term-muted">Threshold:</span> <span class="term-success">Pass synthetic score &lt; 50</span>
+                        </div>
+                        <div class="term-row divider"></div>
+                        <div class="term-row">
+                            <span class="term-line-no">07</span>
+                            <span class="term-warning">Failed gate caps the final score</span>
+                        </div>
+                        <div class="term-row indent">
+                            <span class="term-line-no">08</span>
+                            <span class="term-val">Passing gates use a weighted average</span>
+                        </div>
+                        <div class="term-row divider"></div>
+                        <div class="term-row">
+                            <span class="term-line-no">09</span>
+                            <span class="term-muted">HARD BINDING:</span>
+                            <span class="term-val">RSA-PSS signatures over exact image bytes</span>
+                        </div>
+                        <div class="term-row">
+                            <span class="term-line-no">10</span>
+                            <span class="term-muted">SOFT BINDING:</span>
+                            <span class="term-val">64-BIT Y-DCT WATERMARK + VP-TREE dHASH</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Feature cards -->
-        <div class="results-grid" style="margin-top:32px;">
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon blue">🔬</div>
-                    <div><h2>Forgery Detection</h2><p>ELA + Noise + AI</p></div>
+        <!-- 4-Column Exposed Hairline Specification Grid (Bottom of #page-home) -->
+        <section class="spec-grid-container">
+            <div class="spec-grid-cell">
+                <div class="spec-cell-header">
+                    <span class="spec-idx">01 // QUAD-BRANCH VISION</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
-                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
-                    Error Level Analysis detects compression inconsistencies. Noise analysis reveals splicing artifacts. Our AI classifier examines frequency-domain features to uncover copy-move and manipulation.
-                </p>
+                <h3>Dual-Domain Forensic Extraction</h3>
+                <p>Analyzes spatial compression residuals with gradient-normalized ELA, 30-filter SRM steganalysis noise, and 2D FFT azimuthal radial spectrum slopes.</p>
+                <div class="spec-cell-footer text-mono">CIFAKE-B0 + Detectra ViT-S/16</div>
             </div>
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon violet">🔐</div>
-                    <div><h2>Digital Signatures</h2><p>RSA-2048 + SHA-256</p></div>
+
+            <div class="spec-grid-cell">
+                <div class="spec-cell-header">
+                    <span class="spec-idx">02 // ENCRYPTED KEY STORAGE</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
-                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
-                    Generate RSA key pairs and digitally sign your images. Any modification invalidates the signature, providing cryptographic proof of ownership and integrity.
-                </p>
+                <h3>Envelope Cryptographic Custody</h3>
+                <p>Server-side private keys protected with Scrypt KEK derivation and AES-256-GCM authenticated encryption; client-side non-custodial W3C WebCrypto signing.</p>
+                <div class="spec-cell-footer text-mono">Scrypt + AES-256-GCM AEAD</div>
             </div>
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon green">📜</div>
-                    <div><h2>Certificates</h2><p>PDF + QR Verification</p></div>
+
+            <div class="spec-grid-cell">
+                <div class="spec-cell-header">
+                    <span class="spec-idx">03 // LOCAL AUDIT LOG</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 </div>
-                <p style="font-size:0.85rem; color:var(--surface-400); line-height:1.7;">
-                    Generate professional PDF certificates of authenticity with embedded QR codes. Share verifiable proof that your image has been analyzed and signed.
-                </p>
+                <h3>Signed Local Checkpoints</h3>
+                <p>Retains analysis, signing, and deletion events. Compares current records with historical snapshots and signed checkpoints. Export checkpoints to detect local history rollback.</p>
+                <div class="spec-cell-footer text-mono">SHA-256 Merkle tree + Ed25519 checkpoints</div>
             </div>
-        </div>
+
+            <div class="spec-grid-cell">
+                <div class="spec-cell-header">
+                    <span class="spec-idx">04 // SOFT-BINDING RECOVERY</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                </div>
+                <h3>Adversarial Survivability</h3>
+                <p>Finds candidate originals after compression using DCT watermarks and perceptual hashes. A candidate match does not verify ownership, provenance, or an unchanged image.</p>
+                <div class="spec-cell-footer text-mono">d_H &lt;= 10 + JET Diff Map</div>
+            </div>
+        </section>
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
     <!--  ANALYZE PAGE                               -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-analyze" class="page">
-        <div class="glass-card">
-            <div class="card-header">
-                <div class="icon blue">🔬</div>
-                <div>
-                    <h2>Image Forgery Analysis</h2>
-                    <p>Upload an image to detect manipulation using AI</p>
+        <div class="workbench-panel">
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <span class="header-indicator"></span>
+                    <h2>Two-Gate Forensic Workbench</h2>
+                </div>
+                <span class="text-mono text-muted text-xs">PIPELINE: ELA_SRM_FFT_ONNX</span>
+            </div>
+
+            <!-- Precision CAD Dropzone -->
+            <div class="cad-upload-zone" id="uploadZone">
+                <span class="cad-crosshair tl">+</span>
+                <span class="cad-crosshair tr">+</span>
+                <span class="cad-crosshair bl">+</span>
+                <span class="cad-crosshair br">+</span>
+                <div class="cad-drop-inner" id="uploadContent">
+                    <div class="cad-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <h3>SELECT_IMAGE_CANVAS // DROP_OR_BROWSE</h3>
+                    <p>PNG, JPG, JPEG, BMP, TIFF, WEBP (Max 16 MB) · Full-canvas pixel inspection</p>
+                    <span class="cad-browse-btn">BROWSE LOCAL STORAGE</span>
+                </div>
+                <input type="file" id="fileInput" accept="image/*,.png,.jpg,.jpeg,.bmp,.tiff,.webp" style="display:none">
+            </div>
+
+            <!-- Preview & Analyze Button -->
+            <div class="upload-preview hidden" id="uploadPreview" style="display:none;">
+                <img id="previewImage" alt="Preview">
+                <div class="file-info text-mono" id="fileInfo">
+                    <span id="fileName"></span> <span id="fileSize"></span>
+                </div>
+
+                <!-- 6-Stage Live Progress Stepper -->
+                <div id="stepperContainer" class="stepper-container hidden" style="display:none;">
+                    <div class="stepper-header">
+                        <span id="stepperStageTitle" class="text-mono">INITIALIZING PIPELINE...</span>
+                        <span id="stepperStagePercent" class="text-mono tabular-nums">0%</span>
+                    </div>
+                    <div class="stepper-bar-track">
+                        <div id="stepperBarFill" class="stepper-bar-fill"></div>
+                    </div>
+                    <div class="stepper-steps">
+                        <div class="step-item text-mono" id="step-1"><span class="step-dot"></span> 01_INGEST</div>
+                        <div class="step-item text-mono" id="step-2"><span class="step-dot"></span> 02_ELA</div>
+                        <div class="step-item text-mono" id="step-3"><span class="step-dot"></span> 03_SRM</div>
+                        <div class="step-item text-mono" id="step-4"><span class="step-dot"></span> 04_FFT</div>
+                        <div class="step-item text-mono" id="step-5"><span class="step-dot"></span> 05_ONNX</div>
+                        <div class="step-item text-mono" id="step-6"><span class="step-dot"></span> 06_MERKLE</div>
+                    </div>
+                    <div id="stepperDetail" class="stepper-detail text-mono">Preparing forensic engine...</div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="clearBtn" onclick="clearSelectedFile()">
+                        Clear Selection
+                    </button>
+                    <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeImage()" style="flex:1;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        EXECUTE FORENSIC AUDIT
+                    </button>
                 </div>
             </div>
-
-            <!-- Upload Zone -->
-            <div class="upload-zone" id="uploadZone">
-                <span class="upload-icon">📁</span>
-                <h3>Drop your image here</h3>
-                <p>or click to browse — PNG, JPG, BMP, TIFF, WEBP (max 16 MB)</p>
-                <span class="browse-btn">Browse Files</span>
-                <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.bmp,.tiff,.webp" style="display:none">
-            </div>
-
-            <!-- Preview -->
-            <div class="upload-preview" id="uploadPreview">
-                <img id="previewImage" alt="Preview">
-                <div class="file-info" id="fileInfo"></div>
-                <button class="btn btn-primary btn-lg btn-block mt-md" id="analyzeBtn" onclick="analyzeImage()">
-                    🔍 Analyze Image
-                </button>
-            </div>
         </div>
 
-        <!-- Results -->
-        <div class="results-container" id="resultsContainer">
-            <!-- Populated by JavaScript -->
-        </div>
+        <!-- Results Container (Populated Dynamically) -->
+        <div class="results-container" id="resultsContainer"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
     <!--  SIGN & VERIFY PAGE                         -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-sign" class="page">
-        <div class="results-grid">
-            <!-- Sign Panel -->
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon violet">✍️</div>
-                    <div>
-                        <h2>Sign an Image</h2>
-                        <p>Claim ownership with your RSA key</p>
+        <!-- Dual Tabs: Sign & Verify vs Recover Provenance -->
+        <div class="workbench-tabs">
+            <button class="tab-btn active" onclick="switchSignMode('sign-verify')">01 // SIGN &amp; VERIFY</button>
+            <button class="tab-btn" onclick="switchSignMode('recover-provenance')">02 // SOFT-BINDING RECOVERY</button>
+        </div>
+
+        <!-- Section 1: Standard Sign & Verify -->
+        <div id="sign-verify-section">
+            <div class="grid-2col">
+                <!-- Sign Panel -->
+                <div class="workbench-panel">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <span class="header-indicator"></span>
+                            <h2>Sign Image Bytes</h2>
+                        </div>
+                        <span class="text-mono text-muted text-xs">RSA-PSS-2048 ? original retained</span>
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label text-mono">SELECT ANALYZED IMAGE</label>
+                        <select class="form-select text-mono" id="signImageSelect">
+                            <option value="">-- Select an analyzed image --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label text-mono">SIGNING MECHANISM</label>
+                        <select class="form-select text-mono" id="signModeSelect" onchange="toggleSignMode()">
+                            <option value="SERVER">Server Envelope Key (AES-256-GCM AEAD)</option>
+                            <option value="CLIENT_WEBCRYPTO">Client Browser (W3C WebCrypto Non-Custodial)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="serverKeyGroup">
+                        <label class="form-label text-mono">SELECT REGISTERED KEY</label>
+                        <select class="form-select text-mono" id="signKeySelect">
+                            <option value="">-- Select your key --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="passphraseGroup">
+                        <label class="form-label text-mono">ENVELOPE PASSPHRASE</label>
+                        <input type="password" class="form-input text-mono" id="signPassphrase" placeholder="Passphrase for Scrypt KEK derivation">
+                    </div>
+
+                    <div class="form-group" id="clientKeyGroup" style="display:none;">
+                        <label class="form-label text-mono">LOCAL CLIENT KEY STATUS</label>
+                        <div id="clientKeyStatus" class="key-status-box text-mono">
+                            No local WebCrypto key found. Generate one in Key Vault.
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block mt-md" id="signActionBtn" onclick="executeSign()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        DIGITALLY SIGN IMAGE
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Select Image</label>
-                    <select class="form-select" id="signImageSelect">
-                        <option value="">-- Select an analyzed image --</option>
-                    </select>
-                </div>
+                <!-- Verify Panel -->
+                <div class="workbench-panel">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <span class="header-indicator success"></span>
+                            <h2>Verify Signature Integrity</h2>
+                        </div>
+                        <span class="text-mono text-muted text-xs">DUAL-MODE PSS VERIFIER</span>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Select Your Key</label>
-                    <select class="form-select" id="signKeySelect">
-                        <option value="">-- Select your RSA key --</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label text-mono">SELECT SIGNED IMAGE</label>
+                        <select class="form-select text-mono" id="verifyImageSelect">
+                            <option value="">-- Select a signed image --</option>
+                        </select>
+                    </div>
 
-                <button class="btn btn-primary btn-block mt-md" onclick="signImage()">✍️ Sign Image</button>
+                    <button class="btn btn-secondary btn-block mt-md" onclick="verifySignature()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        VERIFY CRYPTOGRAPHIC SIGNATURE
+                    </button>
+
+                    <div id="verificationResult" class="mt-lg" style="display:none;"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- Verify Panel -->
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon green">✅</div>
-                    <div>
-                        <h2>Verify Signature</h2>
-                        <p>Check image integrity & ownership</p>
+        <!-- Section 2: Soft-Binding Provenance Recovery -->
+        <div id="recover-provenance-section" style="display:none;">
+            <div class="workbench-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <span class="header-indicator warning"></span>
+                        <h2>Recover Provenance from Altered / Stripped Media</h2>
                     </div>
+                    <span class="text-mono text-muted text-xs">64-BIT Y-DCT + VP-TREE dHASH</span>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Select Signed Image</label>
-                    <select class="form-select" id="verifyImageSelect">
-                        <option value="">-- Select a signed image --</option>
-                    </select>
+                <div class="cad-upload-zone" id="recoverUploadZone" style="padding:48px 24px;">
+                    <span class="cad-crosshair tl">+</span>
+                    <span class="cad-crosshair tr">+</span>
+                    <span class="cad-crosshair bl">+</span>
+                    <span class="cad-crosshair br">+</span>
+                    <div class="cad-drop-inner">
+                        <div class="cad-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        <h3>DROP_RECOMPRESSED_OR_ALTERED_IMAGE</h3>
+                        <p>WhatsApp downloads, screenshots, EXIF-stripped or spliced derivatives</p>
+                        <span class="cad-browse-btn">BROWSE DERIVATIVE</span>
+                    </div>
+                    <input type="file" id="recoverFileInput" accept="image/*,.png,.jpg,.jpeg,.bmp,.tiff,.webp" style="display:none">
                 </div>
 
-                <button class="btn btn-success btn-block mt-md" onclick="verifySignature()">✅ Verify Signature</button>
-
-                <div id="verificationResult" class="mt-lg" style="display:none;"></div>
+                <div id="recoverPreview" class="hidden" style="display:none;"></div>
+                <div id="recoverResult" class="mt-lg hidden" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -200,65 +432,90 @@
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-dashboard" class="page">
         <div class="flex-between mb-lg">
-            <h1 style="font-size:1.5rem; font-weight:700; color:var(--surface-50);">📊 Dashboard</h1>
-            <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+            <div>
+                <h1 class="page-title">Transparency Dashboard</h1>
+                <p class="page-subtitle text-mono">IMMUTABLE MERKLE TRANSPARENCY LEDGER &amp; FORENSIC AUDIT LOG</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadDashboard()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                REFRESH
+            </button>
         </div>
 
-        <!-- Stats -->
-        <div class="stats-grid" id="statsGrid">
-            <!-- Populated by JS -->
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Merkle Ledger Banner -->
+        <div class="merkle-ledger-banner">
+            <div>
+                <span class="banner-tag text-mono">ACTIVE MERKLE AUDIT LEDGER ROOT</span>
+                <div id="dashboardMerkleRoot" class="text-mono tabular-nums banner-root">Loading root hash...</div>
+            </div>
+            <span class="status-indicator verified text-mono" id="dashboardTreeSize">0 RECORDS</span>
         </div>
 
-        <!-- Gallery -->
-        <h2 style="font-size:1.125rem; font-weight:600; color:var(--surface-100); margin-bottom:var(--space-md);">
-            Verified Images
-        </h2>
-        <div class="gallery-grid" id="galleryGrid">
-            <!-- Populated by JS -->
-        </div>
+        <!-- Gallery Header & Grid -->
+        <h2 class="section-title">Analysis Archive</h2>
+        <div class="gallery-grid" id="galleryGrid"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
-    <!--  KEY MANAGER PAGE                           -->
+    <!--  KEY VAULT PAGE                             -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-keys" class="page">
-        <div class="results-grid">
+        <div class="grid-2col">
             <!-- Generate Keys -->
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon violet">🔑</div>
-                    <div>
-                        <h2>Generate RSA Key Pair</h2>
-                        <p>Create a new identity for signing</p>
+            <div class="workbench-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <span class="header-indicator"></span>
+                        <h2>Key Identity Generator</h2>
                     </div>
+                    <span class="text-mono text-muted text-xs">RSA-PSS-2048</span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Owner Name *</label>
-                    <input type="text" class="form-input" id="keyOwnerName" placeholder="Enter your name">
+                    <label class="form-label text-mono">OWNER IDENTITY *</label>
+                    <input type="text" class="form-input text-mono" id="keyOwnerName" placeholder="Full name or organizational entity">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email (optional)</label>
-                    <input type="email" class="form-input" id="keyOwnerEmail" placeholder="your@email.com">
+                    <label class="form-label text-mono">EMAIL (OPTIONAL)</label>
+                    <input type="email" class="form-input text-mono" id="keyOwnerEmail" placeholder="signer@entity.io">
+                </div>
+                <div class="form-group">
+                    <label class="form-label text-mono">KEY CUSTODY ARCHITECTURE</label>
+                    <select class="form-select text-mono" id="keyCustodyMode" onchange="toggleKeyGenMode()">
+                        <option value="SERVER_AES_GCM">Encrypted Server Vault (AES-256-GCM AEAD)</option>
+                        <option value="CLIENT_WEBCRYPTO">Non-Custodial In-Browser (W3C WebCrypto)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="keyGenPassphraseGroup">
+                    <label class="form-label text-mono">ENVELOPE PASSPHRASE</label>
+                    <input type="password" class="form-input text-mono" id="keyPassphrase" minlength="12" placeholder="At least 12 characters">
                 </div>
 
-                <button class="btn btn-primary btn-block mt-md" onclick="generateKeys()">🔑 Generate Key Pair</button>
+                <button class="btn btn-primary btn-block mt-md" onclick="generateKeys()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                    GENERATE RSA KEY PAIR
+                </button>
             </div>
 
             <!-- Key List -->
-            <div class="glass-card">
-                <div class="card-header">
-                    <div class="icon blue">📋</div>
-                    <div>
-                        <h2>Your Keys</h2>
-                        <p>Manage your RSA key pairs</p>
+            <div class="workbench-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <span class="header-indicator"></span>
+                        <h2>Registered Keys</h2>
                     </div>
+                    <span class="text-mono text-muted text-xs">CUSTODY REGISTRY</span>
                 </div>
 
                 <div id="keysList">
                     <div class="empty-state">
-                        <div class="empty-icon">🔑</div>
-                        <h3>No keys yet</h3>
+                        <div class="empty-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                        </div>
+                        <h3>NO_KEYS_REGISTERED</h3>
                         <p>Generate your first RSA key pair to start signing images.</p>
                     </div>
                 </div>
@@ -270,13 +527,29 @@
     <!--  DETAIL VIEW PAGE                           -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="page-detail" class="page">
-        <div id="detailContent">
-            <!-- Populated by JS -->
-        </div>
+        <div id="detailContent"></div>
     </div>
 
 </div>
 
-<script src="/static/js/app.js"></script>
+<!-- Offscreen Contract Template Nodes & Fallbacks -->
+<div id="contractPlaceholders" style="display:none;" aria-hidden="true">
+    <div id="attackSimulatorContainer"></div>
+    <img id="loupe-img-orig" alt=""><div id="loupe-lens-orig"></div>
+    <img id="loupe-img-ela" alt=""><div id="loupe-lens-ela"></div>
+    <img id="loupe-img-heat" alt=""><div id="loupe-lens-heat"></div>
+    <img id="loupe-img-sal" alt=""><div id="loupe-lens-sal"></div>
+    <img id="detail-loupe-orig" alt=""><div id="detail-lens-orig"></div>
+    <img id="detail-loupe-ela" alt=""><div id="detail-lens-ela"></div>
+    <img id="detail-loupe-heat" alt=""><div id="detail-lens-heat"></div>
+    <img id="detail-loupe-sal" alt=""><div id="detail-lens-sal"></div>
+</div>
+
+{% if verify_id %}
+<script>
+    window.__VERIFY_IMAGE_ID = {{ verify_id }};
+</script>
+{% endif %}
+<script src="/static/js/app.js?v=2.0.4"></script>
 </body>
 </html>
