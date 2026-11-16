@@ -18,6 +18,8 @@ instance/
 *.db
 
 # Uploads and generated files
+uploads/*
+!uploads/.gitkeep
 static/uploads/*
 static/results/*
 static/certificates/*
@@ -26,3 +28,18 @@ static/keys/*
 !static/results/.gitkeep
 !static/certificates/.gitkeep
 !static/keys/.gitkeep
+
+# Temporary benchmarks
+results/bench_tmp/
+scratch/
+.design-skills/
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+demo-data/
+results/eval_tmp/
+.env.*
+!.env.example

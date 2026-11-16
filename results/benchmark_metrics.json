@@ -1,0 +1,161 @@
+{
+  "benchmark_timestamp": "2026-11-15T12:15:35Z",
+  "regime_1_forensics": {
+    "class_summary": {
+      "natural": {
+        "n": 10,
+        "ela_mean": 94.53,
+        "ela_std": 0.05234500931320842,
+        "srm_mean": 92.643,
+        "srm_std": 0.049406477308144195,
+        "fft_mean": 45.959,
+        "fft_std": 0.7975644174610594,
+        "onnx_mean": 64.002,
+        "onnx_std": 10.731098545815337,
+        "fused_mean": 73.313,
+        "fused_std": 10.95698229440935,
+        "accuracy": 90.0
+      },
+      "spliced": {
+        "n": 10,
+        "ela_mean": 29.564,
+        "ela_std": 0.03878143885933034,
+        "srm_mean": 0.0,
+        "srm_std": 0.0,
+        "fft_mean": 47.992000000000004,
+        "fft_std": 2.572725403147409,
+        "onnx_mean": 77.676,
+        "onnx_std": 9.397108278614226,
+        "fused_mean": 16.259999999999998,
+        "fused_std": 0.020493901531918934,
+        "accuracy": 100.0
+      },
+      "synthetic": {
+        "n": 10,
+        "ela_mean": 94.748,
+        "ela_std": 0.01833030277982359,
+        "srm_mean": 93.392,
+        "srm_std": 0.06660330322138709,
+        "fft_mean": 41.605000000000004,
+        "fft_std": 2.540319861749697,
+        "onnx_mean": 8.621999999999998,
+        "onnx_std": 1.7861231760435794,
+        "fused_mean": 15.738999999999999,
+        "fused_std": 1.243008045026258,
+        "accuracy": 100.0
+      }
+    },
+    "separation_deltas": {
+      "ela_delta_spliced": 64.96600000000001,
+      "srm_delta_spliced": 92.643,
+      "fft_delta_synthetic": 4.353999999999999,
+      "onnx_delta_synthetic": 55.379999999999995,
+      "quad_branch_delta_spliced": 57.053000000000004,
+      "quad_branch_delta_synthetic": 57.574000000000005
+    },
+    "mean_latency_ms": 834.8246799995346,
+    "p95_latency_ms": 874.0640700125368
+  },
+  "regime_2_survivability": {
+    "1. Direct Transfer": {
+      "hard_pass_rate_pct": 100.0,
+      "watermark_recovery_rate_pct": 100.0,
+      "mean_hamming_distance": 0.0,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 0.0
+    },
+    "2. Metadata Strip (Lossless)": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 100.0,
+      "mean_hamming_distance": 0.0,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 0.0
+    },
+    "3a. JPEG Re-encode (QF=90)": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 100.0,
+      "mean_hamming_distance": 1.6,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 74.032
+    },
+    "3b. JPEG Re-encode (QF=75)": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 0.0,
+      "mean_hamming_distance": 2.2,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 77.66600000000001
+    },
+    "3c. WhatsApp / JPEG (QF=50)": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 0.0,
+      "mean_hamming_distance": 3.1,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 85.90899999999999
+    },
+    "4. Luminance Shift (+10%)": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 100.0,
+      "mean_hamming_distance": 6.6,
+      "soft_recovery_rate_pct": 100.0,
+      "mean_pixel_change_pct": 95.924
+    },
+    "5. Localized 15% Splice": {
+      "hard_pass_rate_pct": 0.0,
+      "watermark_recovery_rate_pct": 0.0,
+      "mean_hamming_distance": 8.3,
+      "soft_recovery_rate_pct": 90.0,
+      "mean_pixel_change_pct": 76.184
+    }
+  },
+  "regime_3_crypto_merkle": {
+    "aes_gcm_envelope": {
+      "encryption_mean_ms": 43.99541199905798,
+      "decryption_mean_ms": 44.53726799809374,
+      "accuracy_pct": 100.0
+    },
+    "rsa_pss_2048": {
+      "signing_mean_ms": 29.19805399957113,
+      "verify_backend_max_salt_ms": 0.11711000348441303,
+      "verify_webcrypto_32_salt_ms": 0.07079399307258427,
+      "accuracy_pct": 100.0
+    },
+    "pdf_certificate": {
+      "generation_mean_ms": 12.008149997564033,
+      "p95_ms": 14.539470002637241
+    },
+    "merkle_scalability": {
+      "10": {
+        "tree_size": 10,
+        "proof_path_length": 4,
+        "expected_ceil_log2_n": 4,
+        "build_proof_mean_ms": 0.015429995255544782,
+        "verify_mean_ms": 0.004918000195175409,
+        "tamper_detection_rate_pct": 100.0
+      },
+      "100": {
+        "tree_size": 100,
+        "proof_path_length": 7,
+        "expected_ceil_log2_n": 7,
+        "build_proof_mean_ms": 0.13083000085316598,
+        "verify_mean_ms": 0.006753999041393399,
+        "tamper_detection_rate_pct": 100.0
+      },
+      "1000": {
+        "tree_size": 1000,
+        "proof_path_length": 10,
+        "expected_ceil_log2_n": 10,
+        "build_proof_mean_ms": 1.2854999979026616,
+        "verify_mean_ms": 0.009091999381780624,
+        "tamper_detection_rate_pct": 100.0
+      },
+      "5000": {
+        "tree_size": 5000,
+        "proof_path_length": 13,
+        "expected_ceil_log2_n": 13,
+        "build_proof_mean_ms": 6.473059993004426,
+        "verify_mean_ms": 0.011684002820402384,
+        "tamper_detection_rate_pct": 100.0
+      }
+    }
+  }
+}
